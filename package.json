@@ -1,0 +1,23 @@
+{
+  "name": "frontend-challenge",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cockatiella/user-search.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cockatiella/user-search/issues"
+  },
+  "homepage": "https://github.com/cockatiella/user-search#readme",
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  }
+}

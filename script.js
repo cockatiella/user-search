@@ -1,6 +1,6 @@
-new Vue({
+var app = new Vue({
     el: '#app',
-    data() {
+    data: function () {
         return {
             search: localStorage.getItem('search') || '',
             users: [],
@@ -14,81 +14,79 @@ new Vue({
         };
     },
     computed: {
-        filteredUsers() {
-            let filtered = this.users;
+        filteredUsers: function () {
+            var _this = this;
+            var filtered = this.users;
             if (this.search) {
-                filtered = filtered.filter(user => {
-                    const fullName = `${user.name.first} ${user.name.last}`.toLowerCase();
-                    return fullName.includes(this.search.toLowerCase());
+                filtered = filtered.filter(function (user) {
+                    var fullName = "".concat(user.name.first, " ").concat(user.name.last).toLowerCase();
+                    return fullName.includes(_this.search.toLowerCase());
                 });
             }
             if (this.filterGender) {
-                filtered = filtered.filter(user => user.gender === this.filterGender);
+                filtered = filtered.filter(function (user) { return user.gender === _this.filterGender; });
             }
             return filtered;
         },
-        hasMoreResults() {
+        hasMoreResults: function () {
             return this.displayedUsers.length >= this.filteredUsers.length;
         },
     },
     methods: {
-        capitalizeFirstLetter(string) {
+        capitalizeFirstLetter: function (string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
         },
-        fetchUsers() {
+        fetchUsers: function () {
+            var _this = this;
             axios
-                .get(`https://randomuser.me/api/?results=${this.resultsPerPage}`)
-                .then(response => {
-                    this.users = response.data.results;
-                    this.displayedUsers = this.users.slice(0, this.resultsPerPage);
-                })
-                .catch(error => {
-                    console.error(error);
-                });
+                .get("https://randomuser.me/api/?results=".concat(this.resultsPerPage))
+                .then(function (response) {
+                _this.users = response.data.results;
+                _this.displayedUsers = _this.users.slice(0, _this.resultsPerPage);
+            })
+                .catch(function (error) {
+                console.error(error);
+            });
         },
-        filterUsers() {
+        filterUsers: function () {
             this.displayedUsers = this.filteredUsers.slice(0, this.resultsPerPage);
             this.currentPage = 1;
             localStorage.setItem('search', this.search);
             localStorage.setItem('filterGender', this.filterGender);
         },
-        loadMoreResults() {
-            const startIndex = this.currentPage * this.resultsPerPage;
-            const endIndex = startIndex + this.resultsPerPage;
-
-            this.isLoadingMore = true; // Set isLoadingMore to true before the timeout
-
-            setTimeout(() => {
-                this.displayedUsers = this.displayedUsers.concat(
-                    this.filteredUsers.slice(startIndex, endIndex)
-                );
-                this.currentPage++;
-                this.isLoadingMore = false;
-            }, 1000); // Simulating a delay to showcase loading state
+        loadMoreResults: function () {
+            var _this = this;
+            var startIndex = this.currentPage * this.resultsPerPage;
+            var endIndex = startIndex + this.resultsPerPage;
+            this.isLoadingMore = true;
+            setTimeout(function () {
+                _this.displayedUsers = _this.displayedUsers.concat(_this.filteredUsers.slice(startIndex, endIndex));
+                _this.currentPage++;
+                _this.isLoadingMore = false;
+            }, 1000);
         },
-        showUserDetails(user) {
+        showUserDetails: function (user) {
             this.selectedUser = user;
         },
+        handleScroll: function () {
+            var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+            var windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+            var documentHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+            if (documentHeight - scrollTop - windowHeight <= this.scrollThreshold && this.hasMoreResults) {
+                this.loadMoreResults();
+            }
+        },
     },
-    mounted() {
-        // Fetch users from the API
+    mounted: function () {
         this.fetchUsers();
-
-        // Add scroll event listener to the window
         window.addEventListener('scroll', this.handleScroll);
-
-        // Retrieve selected user from local storage
-        this.selectedUser = JSON.parse(localStorage.getItem('selectedUser'));
+        this.selectedUser = JSON.parse(localStorage.getItem('selectedUser') || 'null');
     },
-    beforeDestroy() {
-        // Remove scroll event listener from the window
+    beforeDestroy: function () {
         window.removeEventListener('scroll', this.handleScroll);
-
-        // Store selected user in local storage
         localStorage.setItem('selectedUser', JSON.stringify(this.selectedUser));
     },
-    destroyed() {
-        // Clear selected user
+    destroyed: function () {
         this.selectedUser = null;
     },
 });

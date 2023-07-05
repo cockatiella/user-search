@@ -17,7 +17,11 @@
     "url": "https://github.com/cockatiella/user-search/issues"
   },
   "homepage": "https://github.com/cockatiella/user-search#readme",
-  "devDependencies": {
+  "dependencies": {
+    "axios": "^1.4.0",
     "typescript": "^5.1.6"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0"
   }
 }

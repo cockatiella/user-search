@@ -1,15 +1,15 @@
 var app = new Vue({
-    el: '#app',
+    el: "#app",
     data: function () {
         return {
-            search: localStorage.getItem('search') || '',
+            search: localStorage.getItem("search") || "",
             users: [],
             displayedUsers: [],
-            currentPage: parseInt(localStorage.getItem('currentPage')) || 1,
+            currentPage: parseInt(localStorage.getItem("currentPage")) || 1,
             resultsPerPage: 25,
             scrollThreshold: 200,
             isLoadingMore: false,
-            filterGender: localStorage.getItem('filterGender') || '',
+            filterGender: localStorage.getItem("filterGender") || "",
             selectedUser: null,
         };
     },
@@ -29,7 +29,7 @@ var app = new Vue({
             return filtered;
         },
         hasMoreResults: function () {
-            return this.displayedUsers.length >= this.filteredUsers.length;
+            return this.displayedUsers.length < this.filteredUsers.length;
         },
     },
     methods: {
@@ -51,40 +51,51 @@ var app = new Vue({
         filterUsers: function () {
             this.displayedUsers = this.filteredUsers.slice(0, this.resultsPerPage);
             this.currentPage = 1;
-            localStorage.setItem('search', this.search);
-            localStorage.setItem('filterGender', this.filterGender);
+            localStorage.setItem("search", this.search);
+            localStorage.setItem("filterGender", this.filterGender);
         },
         loadMoreResults: function () {
             var _this = this;
-            var startIndex = this.currentPage * this.resultsPerPage;
+            var startIndex = this.displayedUsers.length;
             var endIndex = startIndex + this.resultsPerPage;
             this.isLoadingMore = true;
-            setTimeout(function () {
-                _this.displayedUsers = _this.displayedUsers.concat(_this.filteredUsers.slice(startIndex, endIndex));
-                _this.currentPage++;
+            axios
+                .get("https://randomuser.me/api/?results=".concat(this.resultsPerPage))
+                .then(function (response) {
+                var newUsers = response.data.results;
+                _this.displayedUsers = _this.displayedUsers.concat(newUsers);
                 _this.isLoadingMore = false;
-            }, 1000);
+            })
+                .catch(function (error) {
+                console.error(error);
+                _this.isLoadingMore = false;
+            });
         },
         showUserDetails: function (user) {
             this.selectedUser = user;
         },
         handleScroll: function () {
-            var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
-            var windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+            var scrollTop = window.pageYOffset ||
+                document.documentElement.scrollTop ||
+                document.body.scrollTop;
+            var windowHeight = window.innerHeight ||
+                document.documentElement.clientHeight ||
+                document.body.clientHeight;
             var documentHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-            if (documentHeight - scrollTop - windowHeight <= this.scrollThreshold && this.hasMoreResults) {
+            if (documentHeight - scrollTop - windowHeight <= this.scrollThreshold &&
+                this.hasMoreResults) {
                 this.loadMoreResults();
             }
         },
     },
     mounted: function () {
         this.fetchUsers();
-        window.addEventListener('scroll', this.handleScroll);
-        this.selectedUser = JSON.parse(localStorage.getItem('selectedUser') || 'null');
+        window.addEventListener("scroll", this.handleScroll);
+        this.selectedUser = JSON.parse(localStorage.getItem("selectedUser") || "null");
     },
     beforeDestroy: function () {
-        window.removeEventListener('scroll', this.handleScroll);
-        localStorage.setItem('selectedUser', JSON.stringify(this.selectedUser));
+        window.removeEventListener("scroll", this.handleScroll);
+        localStorage.setItem("selectedUser", JSON.stringify(this.selectedUser));
     },
     destroyed: function () {
         this.selectedUser = null;

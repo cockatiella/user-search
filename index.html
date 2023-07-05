@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>User Search Page</title>
+</head>
+
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="search">
+                <input type="text" v-model="search" placeholder="Search by name" @input="filterUsers">
+                <select v-model="filterGender" @change="filterUsers">
+                    <option value="">All Genders</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+                <div class="users">
+                    <div class="user" v-for="(user, index) in displayedUsers" :key="user.login.uuid"
+                        @click="showUserDetails(user)">
+                        <img :src="user.picture.thumbnail" alt="">
+                        <div class="user-info">
+                            <h2>{{ capitalizeFirstLetter(user.name.first) }} {{ capitalizeFirstLetter(user.name.last) }}
+                            </h2>
+                            <p>{{ user.email }}</p>
+                        </div>
+                    </div>
+                    <p v-if="!displayedUsers.length">No results found.</p>
+                    <div class="more-results" v-if="hasMoreResults">
+                        <button @click="loadMoreResults" v-if="!isLoadingMore">More results...</button>
+                        <p v-if="isLoadingMore">Loading more results...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="user-details" v-if="selectedUser">
+                <img :src="selectedUser.picture.large" alt="">
+                <div class="user-info">
+                    <h2>{{ capitalizeFirstLetter(selectedUser.name.first) }} {{
+                        capitalizeFirstLetter(selectedUser.name.last) }}</h2>
+                    <p>UserID: {{ selectedUser.login.uuid }}</p>
+                    <p>Location: {{ capitalizeFirstLetter(selectedUser.location.city) }},
+                        {{ capitalizeFirstLetter(selectedUser.location.state) }},
+                        {{
+                        capitalizeFirstLetter(selectedUser.location.country) }}</p>
+                    <p>Phone: {{ selectedUser.phone }}</p>
+                    <p>Mobile: {{ selectedUser.cell }} </p>
+                    <p>Email: {{ selectedUser.email }}</p>
+                    <div class="buttons">
+                        <button @click="selectedUser = null">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="script.js"></script>
+</body>
+
+</html>

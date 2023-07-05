@@ -31,6 +31,7 @@ interface AppData {
   isLoadingMore: boolean;
   filterGender: string;
   selectedUser: User | null;
+  hasMoreResults: boolean;
 }
 
 const app = new Vue({
@@ -46,38 +47,37 @@ const app = new Vue({
       isLoadingMore: false,
       filterGender: localStorage.getItem("filterGender") || "",
       selectedUser: null,
+      hasMoreResults: false,
     };
   },
   computed: {
     filteredUsers(): User[] {
       let filtered = this.users;
       if (this.search) {
-        filtered = filtered.filter((user) => {
+        filtered = filtered.filter((user: { name: { first: any; last: any; }; }) => {
           const fullName = `${user.name.first} ${user.name.last}`.toLowerCase();
           return fullName.includes(this.search.toLowerCase());
         });
       }
       if (this.filterGender) {
-        filtered = filtered.filter((user) => user.gender === this.filterGender);
+        filtered = filtered.filter((user: { gender: any; }) => user.gender === this.filterGender);
       }
       return filtered;
-    },
-    hasMoreResults(): boolean {
-      return this.displayedUsers.length < this.filteredUsers.length;
     },
   },
   methods: {
     capitalizeFirstLetter(string: string): string {
       return string.charAt(0).toUpperCase() + string.slice(1);
     },
-    fetchUsers(): void {
+    fetchInitialResults(): void {
       axios
         .get(`https://randomuser.me/api/?results=${this.resultsPerPage}`)
-        .then((response) => {
+        .then((response: { data: { results: any; }; }) => {
           this.users = response.data.results;
           this.displayedUsers = this.users.slice(0, this.resultsPerPage);
+          this.hasMoreResults = this.displayedUsers.length < this.filteredUsers.length;
         })
-        .catch((error) => {
+        .catch((error: any) => {
           console.error(error);
         });
     },
@@ -86,6 +86,7 @@ const app = new Vue({
       this.currentPage = 1;
       localStorage.setItem("search", this.search);
       localStorage.setItem("filterGender", this.filterGender);
+      this.hasMoreResults = this.displayedUsers.length < this.filteredUsers.length;
     },
     loadMoreResults(): void {
       const startIndex = this.displayedUsers.length;
@@ -95,12 +96,13 @@ const app = new Vue({
 
       axios
         .get(`https://randomuser.me/api/?results=${this.resultsPerPage}`)
-        .then((response) => {
+        .then((response: { data: { results: any; }; }) => {
           const newUsers = response.data.results;
           this.displayedUsers = this.displayedUsers.concat(newUsers);
           this.isLoadingMore = false;
+          this.hasMoreResults = this.displayedUsers.length < this.filteredUsers.length;
         })
-        .catch((error) => {
+        .catch((error: any) => {
           console.error(error);
           this.isLoadingMore = false;
         });
@@ -130,7 +132,7 @@ const app = new Vue({
     },
   },
   mounted(): void {
-    this.fetchUsers();
+    this.fetchInitialResults();
 
     window.addEventListener("scroll", this.handleScroll);
 

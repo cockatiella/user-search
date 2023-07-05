@@ -11,6 +11,7 @@ var app = new Vue({
             isLoadingMore: false,
             filterGender: localStorage.getItem("filterGender") || "",
             selectedUser: null,
+            hasMoreResults: false,
         };
     },
     computed: {
@@ -28,21 +29,19 @@ var app = new Vue({
             }
             return filtered;
         },
-        hasMoreResults: function () {
-            return this.displayedUsers.length < this.filteredUsers.length;
-        },
     },
     methods: {
         capitalizeFirstLetter: function (string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
         },
-        fetchUsers: function () {
+        fetchInitialResults: function () {
             var _this = this;
             axios
                 .get("https://randomuser.me/api/?results=".concat(this.resultsPerPage))
                 .then(function (response) {
                 _this.users = response.data.results;
                 _this.displayedUsers = _this.users.slice(0, _this.resultsPerPage);
+                _this.hasMoreResults = _this.displayedUsers.length < _this.filteredUsers.length;
             })
                 .catch(function (error) {
                 console.error(error);
@@ -53,6 +52,7 @@ var app = new Vue({
             this.currentPage = 1;
             localStorage.setItem("search", this.search);
             localStorage.setItem("filterGender", this.filterGender);
+            this.hasMoreResults = this.displayedUsers.length < this.filteredUsers.length;
         },
         loadMoreResults: function () {
             var _this = this;
@@ -65,6 +65,7 @@ var app = new Vue({
                 var newUsers = response.data.results;
                 _this.displayedUsers = _this.displayedUsers.concat(newUsers);
                 _this.isLoadingMore = false;
+                _this.hasMoreResults = _this.displayedUsers.length < _this.filteredUsers.length;
             })
                 .catch(function (error) {
                 console.error(error);
@@ -89,7 +90,7 @@ var app = new Vue({
         },
     },
     mounted: function () {
-        this.fetchUsers();
+        this.fetchInitialResults();
         window.addEventListener("scroll", this.handleScroll);
         this.selectedUser = JSON.parse(localStorage.getItem("selectedUser") || "null");
     },
